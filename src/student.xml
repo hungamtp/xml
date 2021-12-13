@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<class totalStudents="2"><student rollno="1">
+    <firstname>Vinh</firstname>
+    <lastname>Phan</lastname></student>
+    <student rollno="2">
+        <firstname>Hoa</firstname>
+        <lastname>Nguyen</lastname>
+    </student>
+</class>
