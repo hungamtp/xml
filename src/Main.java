@@ -2,18 +2,46 @@ import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
     public static String CREATED_FILE = "C:\\Users\\hungnguyenb\\Downloads\\querydsl\\xml\\src\\student.xml";
+    public static String READ_FILE = "C:\\Users\\hungnguyenb\\Downloads\\querydsl\\xml\\src\\input.xml";
     public static void main(String[] args){
-        updateXmlFile();
+        // read by DOM
+//        List<Student> listStudents = readListStudents();
+//        // hiển thị các đối tượng student ra màn hình
+//        for (Student student : listStudents) {
+//            System.out.println(student.toString());
+//        }
+
+        // read by Stax
+        List<Student> listStudents;
+        try {
+            listStudents = readListStudentsStax();
+
+            // hiển thị các đối tượng student ra màn hình
+            for (Student student : listStudents) {
+                System.out.println(student.toString());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
     }
     public static List<Student> readListStudents() {
         List<Student> listStudents = new ArrayList<>();
@@ -21,7 +49,7 @@ public class Main {
 
         try {
             // đọc file input.xml
-            File inputFile = new File("C:\\Users\\hungnguyenb\\Downloads\\querydsl\\xml\\src\\input.xml");
+            File inputFile = new File(READ_FILE);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(inputFile);
@@ -166,5 +194,54 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public static List<Student> readListStudentsStax()
+            throws XMLStreamException, FileNotFoundException {
+        List<Student> listStudents = new ArrayList<>();
+        Student student = null;
+        String tagContent = null;
+
+        File inputFile = new File(READ_FILE);
+        InputStream is = new FileInputStream(inputFile);
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        XMLStreamReader reader = factory.createXMLStreamReader(is);
+
+        // duyệt các phần tử student
+        while (reader.hasNext()) {
+            int event = reader.next();
+
+            switch (event) {
+                case XMLStreamConstants.START_ELEMENT:
+                    // tạo đối tượng student
+                    if ("student".equals(reader.getLocalName())) {
+                        student = new Student();
+                        student.setId(reader.getAttributeValue(0));
+                    }
+                    break;
+
+                case XMLStreamConstants.CHARACTERS:
+                    // đọc nội dung của thẻ hiện tại
+                    tagContent = reader.getText().trim();
+                    break;
+
+                case XMLStreamConstants.END_ELEMENT:
+                    switch (reader.getLocalName()) {
+                        case "student":
+                            listStudents.add(student);
+                            break;
+                        case "firstname":
+                            student.setFirstName(tagContent);
+                            break;
+                        case "lastname":
+                            student.setLastName(tagContent);
+                            break;
+                        case "marks":
+                            student.setMarks(tagContent);
+                            break;
+                    }
+                    break;
+            }
+        }
+        return listStudents;
     }
 }
