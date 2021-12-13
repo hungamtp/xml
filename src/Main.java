@@ -2,6 +2,8 @@ import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -29,17 +31,36 @@ public class Main {
 //        }
 
         // read by Stax
-        List<Student> listStudents;
-        try {
-            listStudents = readListStudentsStax();
 
-            // hiển thị các đối tượng student ra màn hình
-            for (Student student : listStudents) {
+//        List<Student> listStudents;
+//        try {
+//            listStudents = readListStudentsStax();
+//
+//            // hiển thị các đối tượng student ra màn hình
+//            for (Student student : listStudents) {
+//                System.out.println(student.toString());
+//            }
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (XMLStreamException e) {
+//            e.printStackTrace();
+//        }
+
+        // read by SAX
+        try {
+            File inputFile = new File(READ_FILE);
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser saxParser = factory.newSAXParser();
+            UserHandler userhandler = new UserHandler();
+
+            // phân tích tài liệu XML
+            saxParser.parse(inputFile, userhandler);
+
+            // in list đối tượng student ra màn hình
+            for (Student student : userhandler.getListStudents()) {
                 System.out.println(student.toString());
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (XMLStreamException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
